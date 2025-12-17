@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import time
 
 def get_visible_pids():
     """
@@ -64,35 +65,38 @@ def get_hidden_pids_bruteforce():
 def scan_process():
     print("--- Démarrage du Module Processus (Ilyass) ---")
     
-    # 1. Récupérer la vue "normale"
     print("[*] Lecture de la liste 'ps'...")
     visible = get_visible_pids()
-    print(f"    -> {len(visible)} processus visibles trouvés.")
-
-    # 2. Récupérer la vue "brute force"
-    # Note : Ça peut prendre quelques secondes
-    real = get_hidden_pids_bruteforce()
-    print(f"    -> {len(real)} processus réels trouvés par brute-force.")
-
-    # 3. Comparer (PIDs cachés = Réels - Visibles)
-    hidden = real - visible
     
-    if hidden:
-        print(f"\n[!] ALERTE : {len(hidden)} processus cachés détectés !")
-        print(f"[!] PIDs suspects : {hidden}")
+    print("[*] Scan Brute-force en cours...")
+    real = get_hidden_pids_bruteforce()
+
+    suspects = real - visible
+    
+    if not suspects:
+        print("\n[OK] Aucun processus caché détecté.")
+        return False
+
+    print(f"    -> {len(suspects)} candidats suspects trouvés. Vérification...")
+
+    time.sleep(1) 
+    visible_update = get_visible_pids()
+    
+    confirmed_hidden = suspects - visible_update
+
+    if confirmed_hidden:
+        print(f"\n[!] ALERTE : {len(confirmed_hidden)} VRAIS processus cachés détectés !")
         
-        # Petit bonus : Essayer de lire le nom des processus cachés
-        for pid in hidden:
+        for pid in confirmed_hidden:
             try:
-                # On essaie de lire le nom dans /proc/PID/comm
                 with open(f'/proc/{pid}/comm', 'r') as f:
                     name = f.read().strip()
-                print(f"    - PID {pid}: {name}")
+                print(f"    - PID {pid}: {name} (CACHÉ)")
             except:
-                print(f"    - PID {pid}: (Nom inaccessible)")
-        return True # Retourne True car on a trouvé une infection
+                print(f"    - PID {pid}: ???")
+        return True
     else:
-        print("\n[OK] Aucun processus caché détecté.")
+        print("\n[OK] Fausse alerte (c'était juste des processus démarrés pendant le scan).")
         return False
 
 # Bloc pour tester ton module tout seul sans attendre les autres

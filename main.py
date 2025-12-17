@@ -39,7 +39,7 @@ def run_full_scan():
     print("\n[+] Launching Network Integrity Scan (Module: Ali)...")
     time.sleep(1)
 
-    is_file_infected = net_check.scan_files()
+    is_file_infected = net_check.scan_net()
     
     if is_file_infected:
         detections += 1
