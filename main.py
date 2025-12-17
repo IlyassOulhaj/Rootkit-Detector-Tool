@@ -5,6 +5,7 @@ import time
 # This looks for process_check.py and file_check.py in the same folder
 import process_check
 import file_check
+import net_check 
 
 def run_full_scan():
     print("========================================")
@@ -34,7 +35,16 @@ def run_full_scan():
     if is_file_infected:
         detections += 1
 
-    # --- STEP 3: Final Report ---
+    # --- STEP 3: Run Ali's Module ---
+    print("\n[+] Launching Network Integrity Scan (Module: Ali)...")
+    time.sleep(1)
+
+    is_file_infected = net_check.scan_files()
+    
+    if is_file_infected:
+        detections += 1
+
+    # --- STEP 4: Final Report ---
     print("\n========================================")
     print("             FINAL REPORT               ")
     print("========================================")
